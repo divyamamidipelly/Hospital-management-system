@@ -1,0 +1,490 @@
+<script>
+    
+let patients = [];
+
+let doctors = [
+    { id: 1, name: "Dr. Ravi", specialization: "Cardiologist", available: true, fee: 800 },
+    { id: 2, name: "Dr. Priya", specialization: "Dermatologist", available: true, fee: 600 },
+    { id: 3, name: "Dr. Kumar", specialization: "Neurologist", available: false, fee: 1000 },
+    { id: 4, name: "Dr. Sneha", specialization: "General Physician", available: true, fee: 500 }
+];
+
+let appointments = [];
+let prescriptions = [];
+let bills = [];
+
+let patientId = 1001;
+let appointmentId = 501;
+let prescriptionId = 701;
+let billId = 901;
+
+// 1. PATIENT REGISTRATION
+// Function Declaration
+
+function registerPatient() {
+
+    let name = prompt("Enter Patient Name:");
+    let age = Number(prompt("Enter Age:"));
+    let gender = prompt("Enter Gender:");
+    let phone = prompt("Enter Phone Number:");
+
+    if (!name || !Number.isInteger(age) || age <= 0 || age > 120 ||
+        !gender || !/^\d{10}$/.test(phone || "")) {
+
+        console.log("Invalid Patient Details!");
+        return;
+    }
+
+    let patient = {
+        id: patientId++,
+        name,
+        age,
+        gender,
+        phone,
+        history: []
+    };
+
+    patients.push(patient);
+
+    console.log("Patient Registration Successful!");
+    console.log("Patient ID:", patient.id);
+    console.log("Patient Name:", patient.name);
+    console.log("Age:", patient.age);
+    console.log("Gender:", patient.gender);
+    console.log("Phone:", patient.phone);
+}
+
+// 2. DOCTOR AVAILABILITY
+// Function Expression
+
+const doctorAvailability = function () {
+
+    console.log("===== AVAILABLE DOCTORS =====");
+
+    doctors.forEach(function (doctor) {
+
+        if (doctor.available) {
+            console.log(
+                "ID:", doctor.id,
+                "| Name:", doctor.name,
+                "| Specialization:", doctor.specialization,
+                "| Consultation Fee: Rs.", doctor.fee
+            );
+        }
+    });
+};
+
+// 3. APPOINTMENT BOOKING
+// Arrow Function
+
+const bookAppointment = () => {
+
+    let id = Number(prompt("Enter Patient ID:"));
+
+    let patient = patients.find(p => p.id === id);
+
+    if (!patient) {
+        console.log("Patient Not Found! Please Register First.");
+        return;
+    }
+
+    doctorAvailability();
+
+    let doctorId = Number(prompt("Enter Doctor ID:"));
+
+    let doctor = doctors.find(d => d.id === doctorId);
+
+    if (!doctor || !doctor.available) {
+        console.log("Doctor Not Available!");
+        return;
+    }
+
+    let date = prompt("Enter Appointment Date:");
+    let time = prompt("Enter Appointment Time:");
+
+    if (!date || !time) {
+        console.log("Invalid Appointment Details!");
+        return;
+    }
+
+    let appointment = {
+        id: appointmentId++,
+        patientId: patient.id,
+        patientName: patient.name,
+        doctorId: doctor.id,
+        doctorName: doctor.name,
+        consultationFee: doctor.fee,
+        date,
+        time,
+        status: "Confirmed"
+    };
+
+    appointments.push(appointment);
+
+    console.log("Appointment Booked Successfully!");
+    console.log("Appointment ID:", appointment.id);
+    console.log("Patient Name:", patient.name);
+    console.log("Doctor Name:", doctor.name);
+    console.log("Date:", date);
+    console.log("Time:", time);
+    console.log("Status:", appointment.status);
+};
+
+// 4. PATIENT HISTORY
+// Anonymous Function
+
+const patientHistory = function () {
+
+    let id = Number(prompt("Enter Patient ID:"));
+
+    let patient = patients.find(function (p) {
+        return p.id === id;
+    });
+
+    if (!patient) {
+        console.log("Patient Not Found!");
+        return;
+    }
+
+    console.log("===== PATIENT MEDICAL HISTORY =====");
+    console.log("Patient ID:", patient.id);
+    console.log("Patient Name:", patient.name);
+
+    if (patient.history.length === 0) {
+        console.log("No Previous Medical Records Found!");
+        return;
+    }
+
+    patient.history.forEach(function (record, index) {
+        console.log("Record:", index + 1);
+        console.log("Problem:", record.problem);
+        console.log("Tablet:", record.tablet);
+        console.log("Doctor:", record.doctor);
+        console.log("Date:", record.date);
+    });
+};
+
+// 5. GENERATE PRESCRIPTION
+// Callback Function
+
+function generatePrescription(callback) {
+
+    let id = Number(prompt("Enter Patient ID:"));
+
+    let patient = patients.find(p => p.id === id);
+
+    if (!patient) {
+        console.log("Patient Not Found!");
+        return;
+    }
+
+    let problem = prompt("Enter Patient Problem:");
+    let tablet = prompt("Enter Tablet Name:");
+
+    if (!problem || !tablet) {
+        console.log("Invalid Prescription Details!");
+        return;
+    }
+
+    let appointment = appointments.filter(
+        a => a.patientId === id
+    ).at(-1);
+
+    let prescription = {
+        id: prescriptionId++,
+        patientId: patient.id,
+        patientName: patient.name,
+        doctor: appointment ? appointment.doctorName : "Not Assigned",
+        problem,
+        tablet
+    };
+
+    prescriptions.push(prescription);
+
+    patient.history.push({
+        problem,
+        tablet,
+        doctor: prescription.doctor,
+        date: new Date().toLocaleDateString()
+    });
+
+    callback(prescription);
+}
+
+// PRESCRIPTION DISPLAY
+// Function Declaration
+
+function displayPrescription(prescription) {
+
+    console.log("===== PRESCRIPTION GENERATED =====");
+    console.log("Prescription ID:", prescription.id);
+    console.log("Patient Name:", prescription.patientName);
+    console.log("Doctor Name:", prescription.doctor);
+    console.log("Patient Problem:", prescription.problem);
+    console.log("Tablet Name:", prescription.tablet);
+    console.log("Prescription Generated Successfully!");
+}
+
+// 6. GENERATE BILL
+// Arrow Function
+
+const generateBill = () => {
+
+    let id = Number(prompt("Enter Patient ID:"));
+
+    let patient = patients.find(p => p.id === id);
+
+    if (!patient) {
+        console.log("Patient Not Found!");
+        return;
+    }
+
+    let appointment = appointments.filter(
+        a => a.patientId === id
+    ).at(-1);
+
+    if (!appointment) {
+        console.log("Please Book an Appointment First!");
+        return;
+    }
+
+    let prescription = prescriptions.filter(
+        p => p.patientId === id
+    ).at(-1);
+
+    if (!prescription) {
+        console.log("Please Generate Prescription First!");
+        return;
+    }
+
+    let consultation = appointment.consultationFee;
+    let treatment = 500;
+    let medicine = 200;
+
+    let total = consultation + treatment + medicine;
+
+    let bill = {
+        id: billId++,
+        patientId: patient.id,
+        patientName: patient.name,
+        consultation,
+        treatment,
+        medicine,
+        total,
+        paymentStatus: "Pending"
+    };
+
+    bills.push(bill);
+
+    console.log("===== HOSPITAL BILL =====");
+    console.log("Bill ID:", bill.id);
+    console.log("Patient ID:", patient.id);
+    console.log("Patient Name:", patient.name);
+    console.log("Doctor:", appointment.doctorName);
+    console.log("Consultation Charges: Rs.", consultation);
+    console.log("Treatment Charges: Rs.", treatment);
+    console.log("Medicine Charges: Rs.", medicine);
+    console.log("--------------------------------");
+    console.log("Total Amount: Rs.", total);
+    console.log("Payment Status:", bill.paymentStatus);
+};
+
+// 7. PAYMENT PROCESSING
+// Function Expression
+
+const processPayment = function () {
+
+    let id = Number(prompt("Enter Bill ID:"));
+
+    let bill = bills.find(b => b.id === id);
+
+    if (!bill) {
+        console.log("Bill Not Found!");
+        return;
+    }
+
+    if (bill.paymentStatus === "Paid") {
+        console.log("Payment Already Completed!");
+        return;
+    }
+
+    console.log("===== HOSPITAL PAYMENT =====");
+    console.log("Patient Name:", bill.patientName);
+    console.log("Total Amount: Rs.", bill.total);
+
+    let choice = Number(prompt(
+        "Select Payment Method:\n" +
+        "1. Cash\n" +
+        "2. UPI\n" +
+        "3. Debit/Credit Card"
+    ));
+
+    let method = "";
+
+    switch (choice) {
+
+        case 1:
+            method = "Cash";
+            break;
+
+        case 2:
+            method = "UPI";
+            break;
+
+        case 3:
+            method = "Debit/Credit Card";
+            break;
+
+        default:
+            console.log("Invalid Payment Method!");
+            return;
+    }
+
+    let confirmPayment = confirm(
+        "Confirm Payment of Rs." + bill.total +
+        " using " + method + "?"
+    );
+
+    if (!confirmPayment) {
+        console.log("Payment Cancelled!");
+        return;
+    }
+
+    bill.paymentStatus = "Paid";
+    bill.paymentMethod = method;
+
+    console.log("===== PAYMENT SUCCESSFUL =====");
+    console.log("Bill ID:", bill.id);
+    console.log("Patient Name:", bill.patientName);
+    console.log("Amount Paid: Rs.", bill.total);
+    console.log("Payment Method:", method);
+    console.log("Payment Status:", bill.paymentStatus);
+};
+
+// 8. DISPLAY PATIENT DETAILS
+// Function Declaration
+
+function displayPatients() {
+
+    if (patients.length === 0) {
+        console.log("No Patients Registered!");
+        return;
+    }
+
+    console.log("===== REGISTERED PATIENTS =====");
+
+    patients.forEach(function (patient) {
+        console.log("Patient ID:", patient.id);
+        console.log("Name:", patient.name);
+        console.log("Age:", patient.age);
+        console.log("Gender:", patient.gender);
+        console.log("Phone:", patient.phone);
+    });
+}
+
+// 9. DISPLAY APPOINTMENTS
+// Function Declaration
+
+function displayAppointments() {
+
+    if (appointments.length === 0) {
+        console.log("No Appointments Found!");
+        return;
+    }
+
+    console.log("===== APPOINTMENT DETAILS =====");
+
+    appointments.forEach(function (appointment) {
+        console.log("Appointment ID:", appointment.id);
+        console.log("Patient:", appointment.patientName);
+        console.log("Doctor:", appointment.doctorName);
+        console.log("Date:", appointment.date);
+        console.log("Time:", appointment.time);
+        console.log("Status:", appointment.status);
+    });
+}
+
+// 10. MAIN HOSPITAL APPLICATION
+// Function Declaration
+
+function hospitalApplication() {
+
+    let choice;
+
+    do {
+
+        let input = prompt(
+            "===== HOSPITAL MANAGEMENT SYSTEM =====\n" +
+            "1. Patient Registration\n" +
+            "2. Doctor Availability\n" +
+            "3. Appointment Booking\n" +
+            "4. Patient History\n" +
+            "5. Generate Prescription\n" +
+            "6. Generate Bill\n" +
+            "7. Payment\n" +
+            "8. Display Patient Details\n" +
+            "9. Display Appointments\n" +
+            "10. Exit\n\n" +
+            "Enter Your Choice:"
+        );
+
+        if (input === null) {
+            choice = 10;
+        } else {
+            choice = Number(input);
+        }
+
+        switch (choice) {
+
+            case 1:
+                registerPatient();
+                break;
+
+            case 2:
+                doctorAvailability();
+                break;
+
+            case 3:
+                bookAppointment();
+                break;
+
+            case 4:
+                patientHistory();
+                break;
+
+            case 5:
+                generatePrescription(displayPrescription);
+                break;
+
+            case 6:
+                generateBill();
+                break;
+
+            case 7:
+                processPayment();
+                break;
+
+            case 8:
+                displayPatients();
+                break;
+
+            case 9:
+                displayAppointments();
+                break;
+
+            case 10:
+                console.log("Thank You for Using Hospital Management System!");
+                break;
+
+            default:
+                console.log("Invalid Choice! Please Try Again.");
+        }
+
+    } while (choice !== 10);
+}
+
+// START APPLICATION
+
+hospitalApplication();
+
+</script>
